@@ -23,11 +23,11 @@ To extract features after polar transforming each image and save under `features
 ```
 python extract_features.py --data_dir ./data/측정_250926 \
 	--classes Ref Degree Distance Particle Crack \
-	--crop --encoder resnet50 --use_polar --r_bins 512 --s_bins 1024 --signal_ratio 0.2
+	--crop --encoder resnet18 --use_polar --r_bins 512 --s_bins 1024 --signal_ratio 0.2
 ```
 
 Then train from the polar features directory, e.g.:
 
 ```
-python main.py --features_dir features/polar/resnet50 --method patch --pooling transmil --classes Ref Degree
+python main.py --features_dir features/polar/resnet18 --method patch --pooling transmil --classes Ref Degree
 ```
