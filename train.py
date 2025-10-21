@@ -4,14 +4,14 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
-
+from tqdm import tqdm
 from utils import AverageMeter, save_checkpoint, load_checkpoint, plot_confusion_matrix_image
 from evaluate import run_one_epoch
 
 def train_one_epoch(model, loader, criterion, optimizer, device):
     model.train()
     loss_meter, acc_meter = AverageMeter(), AverageMeter()
-
+    pbar = tqdm(loader, desc="[Train] Batch", unit="batch", leave=False)
     for data_items in loader:
         if len(data_items) == 4:  # Patch-based loader
             inputs, labels, fnames, lengths = data_items
@@ -48,7 +48,8 @@ def train_one_epoch(model, loader, criterion, optimizer, device):
         batch_acc = (preds == y_true).float().mean().item()
         loss_meter.update(loss.item(), n)
         acc_meter.update(batch_acc, n)
-
+        pbar.set_postfix(step_loss=f"{loss_meter.avg:.4f}", step_acc=f"{acc_meter.avg:.4f}")
+    pbar.close()
     return loss_meter.avg, acc_meter.avg
 
 def run_training(args, model, train_loader, val_loader, criterion, optimizer, device):

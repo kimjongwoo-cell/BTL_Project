@@ -15,6 +15,16 @@ def collate_fn_patch(batch):
     labels = torch.tensor(labels)
     return features, labels, fnames, lengths
 
+class LabelRemapper(Dataset):
+    def __init__(self, subset, label_map):
+        self.subset = subset
+        self.label_map = label_map
+    def __len__(self):
+        return len(self.subset)
+    def __getitem__(self, idx):
+        feature, original_label, fname = self.subset[idx]
+        return feature, self.label_map[original_label], fname
+    
 def build_image_loaders(data_dir, source_classes, target_classes, label_map, target_size, batch_size, num_workers, seed, use_augmentation, test_frac=0.1, val_frac=0.2, split_method='ratio', train_samples_per_class=None):
     print("[INFO] Building loaders from raw image data.")
     full_ds = RingBeamDataset(root_path=data_dir, classes=source_classes, target_size=target_size, normalize=True)
@@ -159,16 +169,6 @@ def build_feature_loaders(features_dir, source_classes, target_classes, label_ma
     train_indices.sort()
     val_indices.sort()
     test_indices.sort()
-
-    class LabelRemapper(Dataset):
-        def __init__(self, subset, label_map):
-            self.subset = subset
-            self.label_map = label_map
-        def __len__(self):
-            return len(self.subset)
-        def __getitem__(self, idx):
-            feature, original_label, fname = self.subset[idx]
-            return feature, self.label_map[original_label], fname
 
     train_ds = LabelRemapper(Subset(full_ds, train_indices), label_map)
     val_ds = LabelRemapper(Subset(full_ds, val_indices), label_map)

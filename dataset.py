@@ -19,7 +19,6 @@ def downsample_image_np(img_np, target_size):
         return img_np[::stride_y, ::stride_x][:target_size[0], :target_size[1]]
     return img_np
 
-
 class RingBeamDataset(Dataset):
     def __init__(self, root_path, classes: list[str], target_size=(256, 256),
                  normalize=True, crop=False, crop_coords=(0, 0, 0, 0)):
@@ -29,32 +28,26 @@ class RingBeamDataset(Dataset):
         self.max_value = 4096.0 if normalize else 1.0
         self.crop = crop
         self.crop_coords = crop_coords
-        
         self.class_names = classes
         self.num_classes = len(classes)
         self.class_to_idx = {name: i for i, name in enumerate(self.class_names)}
-        
         self.items = []
         for class_name in self.class_names:
             class_dir = os.path.join(self.root_path, class_name)
             if not os.path.isdir(class_dir):
                 print(f"Warning: Directory not found: {class_dir}")
                 continue
-
-            # ✅ 하위 폴더까지 재귀적으로 순회
+            # :흰색_확인_표시: 하위 폴더까지 재귀적으로 순회
             for root, _, files in os.walk(class_dir):
                 for fname in files:
                     if fname.lower().endswith(('.tiff', '.tif')):
                         fpath = os.path.join(root, fname)
                         self.items.append((fpath, self.class_to_idx[class_name]))
-
     def __len__(self):
         return len(self.items)
-
     def __getitem__(self, idx):
         path, label = self.items[idx]
         img = read_image(path, normalize=self.normalize, max_value=self.max_value)
-        
         if self.crop:
             x, y, w, h = self.crop_coords
             img_h, img_w = img.shape
@@ -63,10 +56,8 @@ class RingBeamDataset(Dataset):
             if h == -1:
                 h = img_h - y
             img = img[y:y+h, x:x+w]
-
         if self.target_size is not None:
             img = downsample_image_np(img, self.target_size)
-
         tensor = torch.from_numpy(img.copy()).unsqueeze(0)
         return tensor, int(label), os.path.basename(path)
 

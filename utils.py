@@ -6,6 +6,7 @@ from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 from io import BytesIO
 from PIL import Image
+import matplotlib as mpl
 
 def seed_everything(seed=42):
     random.seed(seed); np.random.seed(seed); torch.manual_seed(seed); torch.cuda.manual_seed_all(seed)
@@ -40,6 +41,12 @@ def accuracy(output, target):
         return correct / target.size(0)
 
 def plot_confusion_matrix_image(y_true, y_pred, class_names):
+    try:
+        mpl.rc('font', family='Malgun Gothic')
+        mpl.rc('axes', unicode_minus=False)
+    except Exception as e:
+        print(f"폰트 설정 경고: {e}")
+
     cm = confusion_matrix(y_true, y_pred, labels=list(range(len(class_names))))
     fig, ax = plt.subplots(figsize=(4, 4))
     im = ax.imshow(cm, interpolation='nearest', cmap='Blues')
